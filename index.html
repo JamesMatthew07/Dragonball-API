@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="x-icon" href="https://i.imgur.com/DFfuA89.png" />
+  <title>Dragon Ball</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>*
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: 
+        url('https://i.imgur.com/poV366U.png') no-repeat center center fixed,
+        url('https://i.imgur.com/4UrqCJL.gif') no-repeat center center fixed,
+        url('https://i.imgur.com/RRamA4I.gif') no-repeat center center fixed,
+        url('https://i.imgur.com/EZmA0Ss.gif') no-repeat center center fixed;
+      background-size: 20%, 10%, 20%, 13%;
+      background-position: 103% 25%, 0% 30%, 0% 90%, 100% 80%;
+      background-color: #F85B1A;
+    }
+
+    .ball img {
+      width: 15%;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-primary text-white text-center py-3">
+    <div class="d-flex justify-content-center align-items-center">
+      <img src="https://i.imgur.com/M37ub7J.png" alt="Dragon Ball" onclick="refreshPage()" />
+    </div>
+  </div>
+
+  <div class="container mt-4">
+    <div class="input-group mb-3">
+      <input type="text" class="form-control" id="searchInput" placeholder="Search by name" oninput="searchCharacter()">
+      <button class="btn btn-primary" id="searchBtn" onclick="searchCharacter()">Search</button>
+    </div>
+
+    <div class="row" id="poke_container">
+    </div>
+  </div>
+
+  <footer class="bg-dark text-white text-center py-3 mt-4">
+    <p>All rights reserved.</p>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const colors = {
+      Saiyan: 'gold',
+      Namekian: 'green',
+      Human: '#E8E4C9',
+      'Frieza Race': 'Purple',
+      Android: 'maroon',
+      Majin: 'Pink',
+      God: 'Skyblue',
+      Angel: 'White',
+      Unknown: 'grey',
+      'Jiren Race': 'Red',
+      Evil: 'Violet',
+      'Nucleico benigno': 'orange',
+      Nucleico: 'silver'
+    }
+
+    const poke_container = document.getElementById('poke_container');
+    const footer = document.querySelector('footer');
+    const character_number = 35;
+    let pageLoaded = false;
+
+    const fetchCharacters = async () => {
+      for (let i = 1; i <= character_number; i++) {
+        await getCharacter(i);
+      }
+      pageLoaded = true;
+    }
+
+    const getCharacter = async id => {
+      const url = `https://dragonball-api.com/api/characters/${id}`;
+
+      try {
+        const res = await fetch(url);
+        const character = await res.json();
+
+        if (character.image) {
+          createCharacterCard(character);
+        } else {
+          console.error(`Character with ID ${id} not found.`);
+        }
+      } catch (error) {
+        console.error(`Error fetching character with ID ${id}:`, error);
+      }
+    }
+
+    function createCharacterCard(character) {
+      const col = document.createElement('div');
+      col.classList.add('col-md-4', 'mb-4');
+
+      const card = `
+        <div class="card h-100 text-center" style="background-color: ${colors[character.race] || 'grey'};">
+          <div class="card-body">
+            <div class="rounded-circle bg-light mx-auto mb-3" style="width: 108px; height: 144px;">
+              <img src="${character.image}" alt="${character.name}" class="img-fluid">
+            </div>
+            <h5 class="card-title">${character.name}</h5>
+            <p class="card-text">Race: ${character.race || 'Unknown'}</p>
+            <p class="card-text">Affiliation: ${character.affiliation || 'Unknown'}</p>
+          </div>
+        </div>
+      `;
+
+      col.innerHTML = card;
+      poke_container.appendChild(col);
+    }
+
+    async function searchCharacter() {
+      const searchInput = document.getElementById('searchInput').value.toLowerCase();
+
+      poke_container.innerHTML = '';
+
+      if (searchInput.trim() !== '') {
+        const url = `https://dragonball-api.com/api/characters?name=${searchInput}`;
+
+        try {
+          const res = await fetch(url);
+          const characters = await res.json();
+
+          if (characters.length > 0) {
+            characters.forEach(character => createCharacterCard(character));
+          } else {
+            console.log(`No characters found with the name ${searchInput}.`);
+          }
+        } catch (error) {
+          console.error('Error fetching characters by name:', error);
+        }
+      } else {
+        fetchCharacters();
+      }
+    }
+
+    const refreshPage = () => {
+      location.reload();
+    };
+
+    fetchCharacters();
+  </script>
+</body>
+
+</html>
